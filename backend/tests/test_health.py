@@ -1,5 +1,6 @@
-from document_platform.main import app
 from fastapi.testclient import TestClient
+
+from document_platform.main import app
 
 client = TestClient(app)
 

@@ -1,0 +1,17 @@
+[project]
+name = "document-platform"
+version = "0.1.0"
+description = "Document Processing & Signing Platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+]
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

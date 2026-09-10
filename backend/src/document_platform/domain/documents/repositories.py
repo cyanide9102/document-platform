@@ -6,7 +6,7 @@ from document_platform.domain.documents.entities import Document
 
 class DocumentRepository(ABC):
     @abstractmethod
-    async def add(self, document: Document) -> None:
+    async def add(self, document: Document):
         pass
 
     @abstractmethod

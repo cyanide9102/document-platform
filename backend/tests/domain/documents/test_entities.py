@@ -6,7 +6,7 @@ from document_platform.domain.documents.entities import Document
 from document_platform.domain.documents.enums import DocumentStatus
 
 
-def test_create_document() -> None:
+def test_create_document():
     document = Document.create("invoice.xml")
 
     assert document.id is not None
@@ -17,17 +17,17 @@ def test_create_document() -> None:
     assert document.created_at == document.updated_at
 
 
-def test_create_document_strips_name() -> None:
+def test_create_document_strips_name():
     document = Document.create(" invoice.xml ")
 
     assert document.name == "invoice.xml"
 
 
-def test_create_document_rejects_empty_name() -> None:
+def test_create_document_rejects_empty_name():
     with pytest.raises(ValueError, match="Document name cannot be empty."):
         Document.create("")
 
 
-def test_create_document_rejects_whitespace_name() -> None:
+def test_create_document_rejects_whitespace_name():
     with pytest.raises(ValueError, match="Document name cannot be empty."):
         Document.create("  ")

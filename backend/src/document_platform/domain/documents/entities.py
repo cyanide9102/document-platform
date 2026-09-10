@@ -12,7 +12,7 @@ class Document:
         status: DocumentStatus,
         created_at: datetime,
         updated_at: datetime,
-    ) -> None:
+    ):
         self.id = id
         self.name = name
         self.status = status

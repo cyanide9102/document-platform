@@ -13,10 +13,10 @@ from document_platform.infrastructure.persistence.models.document import Documen
 
 
 class SqlAlchemyDocumentRepository(DocumentRepository):
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def add(self, document: Document) -> None:
+    async def add(self, document: Document):
         model = to_model(document)
 
         self.session.add(model)

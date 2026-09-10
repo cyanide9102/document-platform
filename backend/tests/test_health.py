@@ -5,7 +5,7 @@ from document_platform.main import app
 client = TestClient(app)
 
 
-def test_health() -> None:
+def test_health():
     response = client.get("/health")
 
     assert response.status_code == 200

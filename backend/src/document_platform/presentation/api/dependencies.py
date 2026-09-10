@@ -4,9 +4,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from document_platform.application.documents.use_cases import (
-    CreateDocument,
-    GetDocument,
-    ListDocuments,
+    CreateDocumentUseCase,
+    GetDocumentUseCase,
+    ListDocumentsUseCase,
 )
 from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.infrastructure.persistence.database import session_factory
@@ -26,19 +26,19 @@ async def get_unit_of_work(
     return SqlAlchemyUnitOfWork(session)
 
 
-async def get_create_document(
+async def get_create_document_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
-) -> CreateDocument:
-    return CreateDocument(unit_of_work)
+) -> CreateDocumentUseCase:
+    return CreateDocumentUseCase(unit_of_work)
 
 
-async def get_get_document(
+async def get_get_document_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
-) -> GetDocument:
-    return GetDocument(unit_of_work)
+) -> GetDocumentUseCase:
+    return GetDocumentUseCase(unit_of_work)
 
 
-async def get_list_documents(
+async def get_list_documents_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
-) -> ListDocuments:
-    return ListDocuments(unit_of_work)
+) -> ListDocumentsUseCase:
+    return ListDocumentsUseCase(unit_of_work)

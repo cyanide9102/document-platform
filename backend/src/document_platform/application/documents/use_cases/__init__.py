@@ -1,9 +1,9 @@
 from document_platform.application.documents.use_cases.create import (
-    CreateDocument,
+    CreateDocumentUseCase,
 )
-from document_platform.application.documents.use_cases.get import GetDocument
+from document_platform.application.documents.use_cases.get import GetDocumentUseCase
 from document_platform.application.documents.use_cases.list import (
-    ListDocuments,
+    ListDocumentsUseCase,
 )
 
-__all__ = ["CreateDocument", "GetDocument", "ListDocuments"]
+__all__ = ["CreateDocumentUseCase", "GetDocumentUseCase", "ListDocumentsUseCase"]

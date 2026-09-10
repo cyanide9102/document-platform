@@ -3,14 +3,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from document_platform.application.documents.use_cases import (
-    CreateDocument,
-    GetDocument,
-    ListDocuments,
+    CreateDocumentUseCase,
+    GetDocumentUseCase,
+    ListDocumentsUseCase,
 )
 from document_platform.presentation.api.dependencies import (
-    get_create_document,
-    get_get_document,
-    get_list_documents,
+    get_create_document_use_case,
+    get_get_document_use_case,
+    get_list_documents_use_case,
 )
 from document_platform.presentation.api.v1.schemas.documents import (
     CreateDocumentRequest,
@@ -30,7 +30,7 @@ router = APIRouter(
 )
 async def create_document(
     request: CreateDocumentRequest,
-    use_case: CreateDocument = Depends(get_create_document),
+    use_case: CreateDocumentUseCase = Depends(get_create_document_use_case),
 ) -> DocumentResponse:
     document = await use_case.execute(request.name)
 
@@ -46,7 +46,7 @@ async def create_document(
     response_model=list[DocumentResponse],
 )
 async def get_documents(
-    use_case: ListDocuments = Depends(get_list_documents),
+    use_case: ListDocumentsUseCase = Depends(get_list_documents_use_case),
 ) -> list[DocumentResponse]:
     documents = await use_case.execute()
     return [
@@ -65,7 +65,7 @@ async def get_documents(
 )
 async def get_document(
     document_id: UUID,
-    use_case: GetDocument = Depends(get_get_document),
+    use_case: GetDocumentUseCase = Depends(get_get_document_use_case),
 ) -> DocumentResponse:
     document = await use_case.execute(document_id)
     if document is None:

@@ -1,6 +1,6 @@
 import pytest
 
-from document_platform.application.documents.use_cases import CreateDocument
+from document_platform.application.documents.use_cases import CreateDocumentUseCase
 from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.domain.documents.entities import Document
 from document_platform.domain.documents.repositories import DocumentRepository
@@ -50,7 +50,7 @@ class FakeUnitOfWork(UnitOfWork):
 @pytest.mark.asyncio
 async def test_create_document():
     unit_of_work = FakeUnitOfWork()
-    use_case = CreateDocument(unit_of_work)
+    use_case = CreateDocumentUseCase(unit_of_work)
 
     document = await use_case.execute("invoice.xml")
 

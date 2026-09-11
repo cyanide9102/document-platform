@@ -19,14 +19,13 @@ class DocumentModel(Base):
         nullable=False,
     )
 
-    storage_key: Mapped[str] = mapped_column(
-        String(512),
+    original_name: Mapped[str] = mapped_column(
+        String(255),
         nullable=False,
-        unique=True,
     )
 
     content_type: Mapped[str | None] = mapped_column(
-        String(255),
+        String(64),
         nullable=True,
     )
 
@@ -35,8 +34,13 @@ class DocumentModel(Base):
         nullable=False,
     )
 
+    content_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+
     status: Mapped[str] = mapped_column(
-        String(255),
+        String(64),
         nullable=False,
     )
 

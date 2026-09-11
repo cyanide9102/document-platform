@@ -11,6 +11,7 @@ class DocumentResponse(BaseModel):
 
     id: UUID
     name: str
+    original_name: str
     content_type: str | None
     size: int
     status: DocumentStatus

@@ -41,6 +41,7 @@ async def create_document(
     return DocumentResponse(
         id=document.id,
         name=document.name,
+        original_name=document.original_name,
         content_type=document.content_type,
         size=document.size,
         status=document.status,
@@ -61,6 +62,7 @@ async def get_documents(
         DocumentResponse(
             id=document.id,
             name=document.name,
+            original_name=document.original_name,
             content_type=document.content_type,
             size=document.size,
             status=document.status,
@@ -87,7 +89,7 @@ async def get_document_content(
         content,
         media_type=document.content_type or "application/octet-stream",
         headers={
-            "Content-Disposition": f'attachment; filename="{document.name}"',
+            "Content-Disposition": f'attachment; filename="{document.original_name}"',
         },
     )
 
@@ -110,6 +112,7 @@ async def get_document(
     return DocumentResponse(
         id=document.id,
         name=document.name,
+        original_name=document.original_name,
         content_type=document.content_type,
         size=document.size,
         status=document.status,

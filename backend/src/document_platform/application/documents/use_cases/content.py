@@ -16,6 +16,6 @@ class GetDocumentContentUseCase:
         if document is None:
             raise ValueError("Document not found.")
 
-        content = await self._document_storage.get(document.storage_key)
+        content = await self._document_storage.get(document.id)
 
         return document, content

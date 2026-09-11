@@ -2,5 +2,7 @@ from enum import StrEnum
 
 
 class DocumentStatus(StrEnum):
-    DRAFT = "draft"
     UPLOADED = "uploaded"
+    PROCESSING = "processing"
+    PROCESSED = "processed"
+    FAILED = "failed"

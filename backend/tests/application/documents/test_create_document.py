@@ -58,27 +58,20 @@ class FailingUnitOfWork(FakeUnitOfWork):
 class FakeDocumentStorage(DocumentStorage):
     def __init__(self):
         self.saved_documents: dict[str, bytes] = {}
-        self.deleted_keys: list[str] = []
+        self.deleted_documents: list[str] = []
 
-    async def save(
-        self,
-        document_id,
-        filename,
-        content,
-    ) -> str:
-        storage_key = f"documents/{document_id}/{filename}"
+    async def save(self, document_id, content):
+        self.saved_documents[str(document_id)] = content.read()
 
-        self.saved_documents[storage_key] = content.read()
-
-        return storage_key
-
-    async def get(self, storage_key):
-        content = self.saved_documents[storage_key]
+    async def get(self, document_id):
+        content = self.saved_documents[str(document_id)]
         return BytesIO(content)
 
-    async def delete(self, storage_key):
-        self.deleted_keys.append(storage_key)
-        self.saved_documents.pop(storage_key, None)
+    async def delete(self, document_id):
+        document_id = str(document_id)
+
+        self.deleted_documents.append(document_id)
+        self.saved_documents.pop(document_id, None)
 
 
 @pytest.mark.asyncio
@@ -96,21 +89,21 @@ async def test_create_document():
     )
 
     assert document.name == "invoice.xml"
+    assert document.original_name == "invoice.xml"
     assert document.id is not None
     assert document.content_type == "application/xml"
     assert document.size == len(b"<invoice>test</invoice>")
-    assert document.storage_key == (f"documents/{document.id}/invoice.xml")
+    assert len(document.content_hash) == 64
     assert document.status == DocumentStatus.UPLOADED
 
     assert len(unit_of_work.documents.documents) == 1
     assert unit_of_work.documents.documents[0] is document
     assert unit_of_work.committed is True
 
-    assert document.storage_key in document_storage.saved_documents
-    assert (
-        document_storage.saved_documents[document.storage_key]
-        == b"<invoice>test</invoice>"
-    )
+    document_id = str(document.id)
+
+    assert document_id in document_storage.saved_documents
+    assert document_storage.saved_documents[document_id] == b"<invoice>test</invoice>"
 
 
 @pytest.mark.asyncio
@@ -133,4 +126,4 @@ async def test_create_document_deletes_storage_when_commit_fails():
         )
 
     assert len(document_storage.saved_documents) == 0
-    assert len(document_storage.deleted_keys) == 1
+    assert len(document_storage.deleted_documents) == 1

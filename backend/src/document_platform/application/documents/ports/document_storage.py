@@ -5,18 +5,13 @@ from uuid import UUID
 
 class DocumentStorage(ABC):
     @abstractmethod
-    async def save(
-        self,
-        document_id: UUID,
-        filename: str,
-        content: BinaryIO,
-    ) -> str:
+    async def save(self, document_id: UUID, content: BinaryIO) -> str:
         pass
 
     @abstractmethod
-    async def get(self, storage_key: str) -> BinaryIO:
+    async def get(self, document_id: UUID) -> BinaryIO:
         pass
 
     @abstractmethod
-    async def delete(self, storage_key: str):
+    async def delete(self, document_id: UUID):
         pass

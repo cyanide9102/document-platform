@@ -2,13 +2,10 @@ from io import BytesIO
 
 import pytest
 
-from document_platform.application.documents.ports.document_storage import (
-    DocumentStorage,
-)
+from document_platform.application.documents.ports import DocumentStorage
 from document_platform.application.documents.use_cases import CreateDocumentUseCase
 from document_platform.application.unit_of_work import UnitOfWork
-from document_platform.domain.documents.entities import Document
-from document_platform.domain.documents.enums import DocumentStatus
+from document_platform.domain.documents import Document, DocumentStatus
 from document_platform.domain.documents.repositories import DocumentRepository
 
 

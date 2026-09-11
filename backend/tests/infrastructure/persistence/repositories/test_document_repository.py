@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from document_platform.domain.documents.entities import Document
+from document_platform.domain.documents import Document
 from document_platform.infrastructure.persistence.unit_of_work import (
     SqlAlchemyUnitOfWork,
 )

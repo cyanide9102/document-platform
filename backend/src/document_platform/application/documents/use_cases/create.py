@@ -1,11 +1,9 @@
 from typing import BinaryIO
 
-from document_platform.application.documents.ports.document_storage import (
-    DocumentStorage,
-)
+from document_platform.application.documents.ports import DocumentStorage
 from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.application.utils import validate_filename
-from document_platform.domain.documents.entities import Document
+from document_platform.domain.documents import Document
 
 
 class CreateDocumentUseCase:

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from document_platform.domain.documents.enums import DocumentStatus
+from .enums import DocumentStatus
 
 
 class Document:

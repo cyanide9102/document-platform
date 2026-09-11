@@ -3,9 +3,7 @@ from collections.abc import AsyncGenerator
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from document_platform.application.documents.ports.document_storage import (
-    DocumentStorage,
-)
+from document_platform.application.documents.ports import DocumentStorage
 from document_platform.application.documents.use_cases import (
     CreateDocumentUseCase,
     GetDocumentContentUseCase,

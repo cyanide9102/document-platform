@@ -15,7 +15,7 @@ from document_platform.presentation.api.dependencies import (
     get_get_document_use_case,
     get_list_documents_use_case,
 )
-from document_platform.presentation.api.v1.schemas.documents import DocumentResponse
+from document_platform.presentation.api.v1.schemas import DocumentResponse
 
 router = APIRouter(
     prefix="/documents",

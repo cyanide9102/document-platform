@@ -1,3 +1,5 @@
-from document_platform.infrastructure.persistence.models.document import DocumentModel
+from .document import DocumentModel
 
-__all__ = ["DocumentModel"]
+__all__ = [
+    "DocumentModel",
+]

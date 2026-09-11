@@ -2,8 +2,7 @@ from datetime import UTC
 
 import pytest
 
-from document_platform.domain.documents.entities import Document
-from document_platform.domain.documents.enums import DocumentStatus
+from document_platform.domain.documents import Document, DocumentStatus
 
 
 def test_create_document():

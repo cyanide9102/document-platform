@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from document_platform.domain.documents.enums import DocumentStatus
+from document_platform.domain.documents import DocumentStatus
 
 
 class DocumentResponse(BaseModel):

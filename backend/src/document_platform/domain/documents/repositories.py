@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from document_platform.domain.documents.entities import Document
+from .entities import Document
 
 
 class DocumentRepository(ABC):

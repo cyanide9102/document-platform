@@ -1,6 +1,5 @@
-from document_platform.domain.documents.entities import Document
-from document_platform.domain.documents.enums import DocumentStatus
-from document_platform.infrastructure.persistence.models.document import DocumentModel
+from document_platform.domain.documents import Document, DocumentStatus
+from document_platform.infrastructure.persistence.models import DocumentModel
 
 
 def to_model(document: Document) -> DocumentModel:

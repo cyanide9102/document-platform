@@ -19,8 +19,8 @@ __pycache__/
 htmlcov/
 
 # Data
-data/
-storage/
+/data/
+/storage/
 
 # IDE
 .idea/

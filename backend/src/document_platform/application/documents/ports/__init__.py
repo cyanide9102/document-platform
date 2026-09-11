@@ -1,4 +1,6 @@
-from .document_storage import DocumentStorage
+from document_platform.application.documents.ports.document_storage import (
+    DocumentStorage,
+)
 
 __all__ = [
     "DocumentStorage",

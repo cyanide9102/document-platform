@@ -18,6 +18,10 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Data
+data/
+storage/
+
 # IDE
 .idea/
 .vscode/

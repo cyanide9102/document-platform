@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, String
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from document_platform.infrastructure.persistence.database import Base
@@ -16,6 +16,22 @@ class DocumentModel(Base):
 
     name: Mapped[str] = mapped_column(
         String(255),
+        nullable=False,
+    )
+
+    storage_key: Mapped[str] = mapped_column(
+        String(512),
+        nullable=False,
+        unique=True,
+    )
+
+    content_type: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
+    size: Mapped[int] = mapped_column(
+        BigInteger,
         nullable=False,
     )
 

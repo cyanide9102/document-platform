@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
 
 class Settings(BaseSettings):
@@ -8,12 +12,6 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_db: str
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
     @property
     def database_url(self) -> str:
         return (
@@ -22,6 +20,16 @@ class Settings(BaseSettings):
             f"{self.postgres_host}:{self.postgres_port}/"
             f"{self.postgres_db}"
         )
+
+    @property
+    def storage_path(self) -> Path:
+        return PROJECT_ROOT / "storage"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()

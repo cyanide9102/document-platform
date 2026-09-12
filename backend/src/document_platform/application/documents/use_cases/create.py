@@ -1,13 +1,14 @@
 import hashlib
 from typing import BinaryIO
+from uuid import UUID
 
-from document_platform.application.documents.ports import DocumentStorage
+from document_platform.application.storage.ports import FileStorage
 from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.domain.documents import Document
 
 
 class CreateDocumentUseCase:
-    def __init__(self, unit_of_work: UnitOfWork, document_storage: DocumentStorage):
+    def __init__(self, unit_of_work: UnitOfWork, document_storage: FileStorage):
         self._unit_of_work = unit_of_work
         self._document_storage = document_storage
 
@@ -16,20 +17,32 @@ class CreateDocumentUseCase:
         name: str,
         content: BinaryIO,
         content_type: str | None,
+        schema_id: UUID,
     ) -> Document:
-        size, content_hash = self._process_content(content)
-        document = Document.create(name, content_type, size, content_hash)
+        async with self._unit_of_work:
+            schema = await self._unit_of_work.schemas.get_by_id(schema_id)
+            if schema is None:
+                raise ValueError(f"Schema not found: {schema_id}")
 
-        try:
-            await self._document_storage.save(document.id, content)
+            size, content_hash = self._process_content(content)
+            document = Document.create(
+                name=name,
+                content_type=content_type,
+                size=size,
+                content_hash=content_hash,
+                schema_id=schema.id,
+            )
 
-            await self._unit_of_work.documents.add(document)
-            await self._unit_of_work.commit()
+            try:
+                await self._document_storage.save(document.id, content)
 
-            return document
-        except Exception:
-            await self._document_storage.delete(document.id)
-            raise
+                await self._unit_of_work.documents.add(document)
+                await self._unit_of_work.commit()
+
+                return document
+            except Exception:
+                await self._document_storage.delete(document.id)
+                raise
 
     def _process_content(self, content: BinaryIO) -> tuple[int, str]:
         content.seek(0)

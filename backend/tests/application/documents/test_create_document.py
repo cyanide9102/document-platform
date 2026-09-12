@@ -1,12 +1,17 @@
 from io import BytesIO
+from uuid import UUID
 
 import pytest
 
-from document_platform.application.documents.ports import DocumentStorage
 from document_platform.application.documents.use_cases import CreateDocumentUseCase
+from document_platform.application.storage.ports import FileStorage
 from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.domain.documents import Document, DocumentStatus
 from document_platform.domain.documents.repositories import DocumentRepository
+from document_platform.domain.schemas import XmlSchema
+from document_platform.domain.schemas.repositories import XmlSchemaRepository
+
+SCHEMA_ID = UUID("11111111-1111-1111-1111-111111111111")
 
 
 class FakeDocumentRepository(DocumentRepository):
@@ -27,9 +32,31 @@ class FakeDocumentRepository(DocumentRepository):
         return self.documents
 
 
+class FakeXmlSchemaRepository(XmlSchemaRepository):
+    def __init__(self):
+        self.schemas: list[XmlSchema] = []
+
+    async def add(self, schema):
+        self.schemas.append(schema)
+
+    async def get_by_id(self, schema_id) -> XmlSchema | None:
+        for schema in self.schemas:
+            if schema.id == schema_id:
+                return schema
+
+        return None
+
+    async def list(self) -> list[XmlSchema]:
+        return self.schemas
+
+    async def delete(self, schema_id):
+        self.schemas = [schema for schema in self.schemas if schema.id != schema_id]
+
+
 class FakeUnitOfWork(UnitOfWork):
     def __init__(self):
         self.documents = FakeDocumentRepository()
+        self.schemas = FakeXmlSchemaRepository()
         self.committed = False
 
     async def __aenter__(self) -> "FakeUnitOfWork":
@@ -55,7 +82,7 @@ class FailingUnitOfWork(FakeUnitOfWork):
         raise RuntimeError("Database failure")
 
 
-class FakeDocumentStorage(DocumentStorage):
+class FakeDocumentStorage(FileStorage):
     def __init__(self):
         self.saved_documents: dict[str, bytes] = {}
         self.deleted_documents: list[str] = []
@@ -74,11 +101,30 @@ class FakeDocumentStorage(DocumentStorage):
         self.saved_documents.pop(document_id, None)
 
 
+def create_schema() -> XmlSchema:
+    schema = XmlSchema.create(
+        name="Invoice",
+        size=1024,
+        content_hash="a" * 64,
+    )
+
+    schema.id = SCHEMA_ID
+
+    return schema
+
+
 @pytest.mark.asyncio
 async def test_create_document():
     unit_of_work = FakeUnitOfWork()
     document_storage = FakeDocumentStorage()
-    use_case = CreateDocumentUseCase(unit_of_work, document_storage)
+
+    schema = create_schema()
+    unit_of_work.schemas.schemas.append(schema)
+
+    use_case = CreateDocumentUseCase(
+        unit_of_work,
+        document_storage,
+    )
 
     content = BytesIO(b"<invoice>test</invoice>")
 
@@ -86,6 +132,7 @@ async def test_create_document():
         name="invoice.xml",
         content=content,
         content_type="application/xml",
+        schema_id=SCHEMA_ID,
     )
 
     assert document.name == "invoice.xml"
@@ -94,6 +141,7 @@ async def test_create_document():
     assert document.content_type == "application/xml"
     assert document.size == len(b"<invoice>test</invoice>")
     assert len(document.content_hash) == 64
+    assert document.schema_id == SCHEMA_ID
     assert document.status == DocumentStatus.UPLOADED
 
     assert len(unit_of_work.documents.documents) == 1
@@ -107,9 +155,40 @@ async def test_create_document():
 
 
 @pytest.mark.asyncio
+async def test_create_document_rejects_nonexistent_schema():
+    unit_of_work = FakeUnitOfWork()
+    document_storage = FakeDocumentStorage()
+
+    use_case = CreateDocumentUseCase(
+        unit_of_work,
+        document_storage,
+    )
+
+    content = BytesIO(b"<invoice>test</invoice>")
+
+    with pytest.raises(
+        ValueError,
+        match=f"Schema not found: {SCHEMA_ID}",
+    ):
+        await use_case.execute(
+            name="invoice.xml",
+            content=content,
+            content_type="application/xml",
+            schema_id=SCHEMA_ID,
+        )
+
+    assert len(unit_of_work.documents.documents) == 0
+    assert len(document_storage.saved_documents) == 0
+    assert unit_of_work.committed is False
+
+
+@pytest.mark.asyncio
 async def test_create_document_deletes_storage_when_commit_fails():
     unit_of_work = FailingUnitOfWork()
     document_storage = FakeDocumentStorage()
+
+    schema = create_schema()
+    unit_of_work.schemas.schemas.append(schema)
 
     use_case = CreateDocumentUseCase(
         unit_of_work,
@@ -123,6 +202,7 @@ async def test_create_document_deletes_storage_when_commit_fails():
             name="invoice.xml",
             content=content,
             content_type="application/xml",
+            schema_id=SCHEMA_ID,
         )
 
     assert len(document_storage.saved_documents) == 0

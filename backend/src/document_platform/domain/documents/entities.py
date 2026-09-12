@@ -13,6 +13,7 @@ class Document:
         content_type: str | None,
         size: int,
         content_hash: str,
+        schema_id: UUID,
         status: DocumentStatus,
         created_at: datetime,
         updated_at: datetime,
@@ -23,6 +24,7 @@ class Document:
         self.content_type = content_type
         self.size = size
         self.content_hash = content_hash
+        self.schema_id = schema_id
         self.status = status
         self.created_at = created_at
         self.updated_at = updated_at
@@ -34,6 +36,7 @@ class Document:
         content_type: str | None,
         size: int,
         content_hash: str,
+        schema_id: UUID,
     ) -> "Document":
         normalized_name = name.strip()
         if not normalized_name:
@@ -64,6 +67,7 @@ class Document:
             content_type=content_type,
             size=size,
             content_hash=normalized_content_hash,
+            schema_id=schema_id,
             status=DocumentStatus.UPLOADED,
             created_at=now,
             updated_at=now,

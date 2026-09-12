@@ -1,0 +1,20 @@
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
+from document_platform.domain.documents import DocumentStatus
+
+
+class DocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    original_name: str
+    content_type: str | None
+    size: int
+    schema_id: UUID
+    status: DocumentStatus
+    created_at: datetime
+    updated_at: datetime

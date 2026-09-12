@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import StreamingResponse
 
 from document_platform.application.documents.use_cases import (
@@ -11,11 +11,11 @@ from document_platform.application.documents.use_cases import (
 )
 from document_platform.presentation.api.dependencies import (
     get_create_document_use_case,
-    get_get_document_content_use_case,
-    get_get_document_use_case,
+    get_document_content_use_case,
+    get_document_use_case,
     get_list_documents_use_case,
 )
-from document_platform.presentation.api.v1.schemas import DocumentResponse
+from document_platform.presentation.api.v1.dtos import DocumentResponse
 
 router = APIRouter(
     prefix="/documents",
@@ -30,12 +30,14 @@ router = APIRouter(
 )
 async def create_document(
     file: UploadFile = File(...),
+    schema_id: UUID = Form(...),
     use_case: CreateDocumentUseCase = Depends(get_create_document_use_case),
 ) -> DocumentResponse:
     document = await use_case.execute(
         name=file.filename,
         content=file.file,
         content_type=file.content_type,
+        schema_id=schema_id,
     )
 
     return DocumentResponse(
@@ -44,6 +46,7 @@ async def create_document(
         original_name=document.original_name,
         content_type=document.content_type,
         size=document.size,
+        schema_id=document.schema_id,
         status=document.status,
         created_at=document.created_at,
         updated_at=document.updated_at,
@@ -65,6 +68,7 @@ async def get_documents(
             original_name=document.original_name,
             content_type=document.content_type,
             size=document.size,
+            schema_id=document.schema_id,
             status=document.status,
             created_at=document.created_at,
             updated_at=document.updated_at,
@@ -76,7 +80,7 @@ async def get_documents(
 @router.get("/{document_id}/content")
 async def get_document_content(
     document_id: UUID,
-    use_case: GetDocumentContentUseCase = Depends(get_get_document_content_use_case),
+    use_case: GetDocumentContentUseCase = Depends(get_document_content_use_case),
 ) -> StreamingResponse:
     document, content = await use_case.execute(document_id)
     if document is None or content is None:
@@ -100,7 +104,7 @@ async def get_document_content(
 )
 async def get_document(
     document_id: UUID,
-    use_case: GetDocumentUseCase = Depends(get_get_document_use_case),
+    use_case: GetDocumentUseCase = Depends(get_document_use_case),
 ) -> DocumentResponse:
     document = await use_case.execute(document_id)
     if document is None:
@@ -115,6 +119,7 @@ async def get_document(
         original_name=document.original_name,
         content_type=document.content_type,
         size=document.size,
+        schema_id=document.schema_id,
         status=document.status,
         created_at=document.created_at,
         updated_at=document.updated_at,

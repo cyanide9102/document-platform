@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import BigInteger, DateTime, String
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from document_platform.infrastructure.persistence.database import Base
@@ -36,6 +36,11 @@ class DocumentModel(Base):
 
     content_hash: Mapped[str] = mapped_column(
         String(64),
+        nullable=False,
+    )
+
+    schema_id: Mapped[UUID] = mapped_column(
+        ForeignKey("xml_schemas.id"),
         nullable=False,
     )
 

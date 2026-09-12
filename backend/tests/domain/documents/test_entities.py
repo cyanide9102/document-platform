@@ -1,10 +1,12 @@
 from datetime import UTC
+from uuid import UUID
 
 import pytest
 
 from document_platform.domain.documents import Document, DocumentStatus
 
 CONTENT_HASH = "a" * 64
+SCHEMA_ID = UUID("11111111-1111-1111-1111-111111111111")
 
 
 def test_create_document():
@@ -13,6 +15,7 @@ def test_create_document():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     assert document.id is not None
@@ -21,6 +24,7 @@ def test_create_document():
     assert document.content_type == "application/xml"
     assert document.size == 1024
     assert document.content_hash == CONTENT_HASH
+    assert document.schema_id == SCHEMA_ID
     assert document.status == DocumentStatus.UPLOADED
     assert document.created_at.tzinfo == UTC
     assert document.updated_at.tzinfo == UTC
@@ -33,6 +37,7 @@ def test_create_document_strips_name():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     assert document.name == "invoice.xml"
@@ -46,6 +51,7 @@ def test_create_document_rejects_empty_name():
             content_type="application/xml",
             size=1024,
             content_hash=CONTENT_HASH,
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -56,6 +62,7 @@ def test_create_document_rejects_whitespace_name():
             content_type="application/xml",
             size=1024,
             content_hash=CONTENT_HASH,
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -66,6 +73,7 @@ def test_create_document_rejects_name_with_path():
             content_type="application/xml",
             size=1024,
             content_hash=CONTENT_HASH,
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -76,6 +84,7 @@ def test_create_document_rejects_negative_size():
             content_type="application/xml",
             size=-1,
             content_hash=CONTENT_HASH,
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -89,6 +98,7 @@ def test_create_document_rejects_invalid_content_hash_length():
             content_type="application/xml",
             size=1024,
             content_hash="abc",
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -102,6 +112,7 @@ def test_create_document_rejects_non_hex_content_hash():
             content_type="application/xml",
             size=1024,
             content_hash="g" * 64,
+            schema_id=SCHEMA_ID,
         )
 
 
@@ -111,6 +122,7 @@ def test_rename_document():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     document.rename("March Invoice")
@@ -125,6 +137,7 @@ def test_rename_document_rejects_empty_name():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     with pytest.raises(ValueError, match="Document name cannot be empty."):
@@ -137,6 +150,7 @@ def test_start_processing():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     document.start_processing()
@@ -150,6 +164,7 @@ def test_mark_processed():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     document.start_processing()
@@ -164,6 +179,7 @@ def test_mark_failed():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     document.start_processing()
@@ -178,6 +194,7 @@ def test_failed_document_can_be_reprocessed():
         content_type="application/xml",
         size=1024,
         content_hash=CONTENT_HASH,
+        schema_id=SCHEMA_ID,
     )
 
     document.start_processing()

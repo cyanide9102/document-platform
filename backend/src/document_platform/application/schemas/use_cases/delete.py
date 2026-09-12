@@ -15,6 +15,16 @@ class DeleteXmlSchemaUseCase:
             if schema is None:
                 return
 
+            document_count = await self._unit_of_work.documents.count_by_schema_id(
+                schema.id
+            )
+
+            if document_count > 0:
+                raise ValueError(
+                    f"Cannot delete schema '{schema.id}' because "
+                    f"documents reference it."
+                )
+
             await self._unit_of_work.schemas.delete(schema.id)
             await self._unit_of_work.commit()
 

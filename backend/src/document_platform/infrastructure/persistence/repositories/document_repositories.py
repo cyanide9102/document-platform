@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from document_platform.domain.documents.entities import Document
@@ -36,3 +36,13 @@ class SqlAlchemyDocumentRepository(DocumentRepository):
         models = result.scalars().all()
 
         return [to_domain(model) for model in models]
+
+    async def count_by_schema_id(self, schema_id: UUID) -> int:
+        statement = (
+            select(func.count())
+            .select_from(DocumentModel)
+            .where(DocumentModel.schema_id == schema_id)
+        )
+
+        result = await self.session.execute(statement)
+        return result.scalar_one()

@@ -16,3 +16,7 @@ class DocumentRepository(ABC):
     @abstractmethod
     async def list(self) -> list[Document]:
         pass
+
+    @abstractmethod
+    async def count_by_schema_id(self, schema_id: UUID) -> int:
+        pass

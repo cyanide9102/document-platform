@@ -10,6 +10,10 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
+    async def update(self, document: Document):
+        pass
+
+    @abstractmethod
     async def get_by_id(self, document_id: UUID) -> Document | None:
         pass
 

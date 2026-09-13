@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from document_platform.application.documents.use_cases import (
@@ -9,6 +9,7 @@ from document_platform.application.documents.use_cases import (
     GetDocumentUseCase,
     ListDocumentsUseCase,
 )
+from document_platform.application.processing.ports import DocumentWorkflowStarter
 from document_platform.application.schemas.use_cases import (
     CreateXmlSchemaUseCase,
     DeleteXmlSchemaUseCase,
@@ -25,6 +26,9 @@ from document_platform.infrastructure.persistence.unit_of_work import (
 from document_platform.infrastructure.storage.local_file_storage import (
     LocalFileStorage,
 )
+from document_platform.infrastructure.temporal.starter import (
+    TemporalDocumentWorkflowStarter,
+)
 
 
 def get_schema_storage() -> FileStorage:
@@ -33,6 +37,13 @@ def get_schema_storage() -> FileStorage:
 
 def get_document_storage() -> FileStorage:
     return LocalFileStorage(settings.storage_path / "documents")
+
+
+def get_workflow_starter(request: Request) -> DocumentWorkflowStarter:
+    return TemporalDocumentWorkflowStarter(
+        client=request.app.state.temporal_client,
+        settings=settings.temporal,
+    )
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -75,8 +86,9 @@ async def get_list_xml_schemas_use_case(
 async def get_create_document_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
     document_storage: FileStorage = Depends(get_document_storage),
+    workflow_starter: DocumentWorkflowStarter = Depends(get_workflow_starter),
 ) -> CreateDocumentUseCase:
-    return CreateDocumentUseCase(unit_of_work, document_storage)
+    return CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
 
 async def get_document_content_use_case(

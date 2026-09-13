@@ -21,6 +21,15 @@ class SqlAlchemyDocumentRepository(DocumentRepository):
 
         self.session.add(model)
 
+    async def update(self, document):
+        model = await self.session.get(DocumentModel, document.id)
+        if model is None:
+            return
+
+        model.name = document.name
+        model.status = document.status
+        model.updated_at = document.updated_at
+
     async def get_by_id(self, document_id: UUID) -> Document | None:
         statement = select(DocumentModel).where(DocumentModel.id == document_id)
         result = await self.session.execute(statement)

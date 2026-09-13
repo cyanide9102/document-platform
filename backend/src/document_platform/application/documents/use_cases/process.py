@@ -29,6 +29,7 @@ class ProcessDocumentUseCase:
                 raise ValueError(f"Schema not found: {document.schema_id}")
 
             document.start_processing()
+            await self._unit_of_work.documents.update(document)
             await self._unit_of_work.commit()
 
             try:
@@ -41,4 +42,5 @@ class ProcessDocumentUseCase:
             except Exception:
                 document.mark_failed()
 
+            await self._unit_of_work.documents.update(document)
             await self._unit_of_work.commit()

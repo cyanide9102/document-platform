@@ -16,5 +16,20 @@ services:
       timeout: 5s
       retries: 5
 
+  temporal:
+    image: temporalio/auto-setup:latest
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: document_platform
+      POSTGRES_PWD: document_platform
+      POSTGRES_SEEDS: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pg_data:

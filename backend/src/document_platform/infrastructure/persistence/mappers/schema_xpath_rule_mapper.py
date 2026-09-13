@@ -1,4 +1,3 @@
-from document_platform.application.processing.models.xpath_rule import XPathRule
 from document_platform.domain.schemas.entities.schema_xpath_rule import (
     XmlSchemaXPathRule,
 )
@@ -28,12 +27,4 @@ class XmlSchemaXPathRuleMapper:
             expression=model.expression,
             namespaces=model.namespaces,
             created_at=model.created_at,
-        )
-
-    @staticmethod
-    def to_application(rule: XmlSchemaXPathRule) -> XPathRule:
-        return XPathRule(
-            name=rule.name,
-            expression=rule.expression,
-            namespaces=rule.namespaces,
         )

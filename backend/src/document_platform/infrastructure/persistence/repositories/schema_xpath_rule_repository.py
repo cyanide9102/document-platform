@@ -26,7 +26,7 @@ class SqlAlchemyXmlSchemaXPathRuleRepository(XmlSchemaXPathRuleRepository):
         statement = (
             select(XmlSchemaXPathRuleModel)
             .where(XmlSchemaXPathRuleModel.schema_id == schema_id)
-            .order_by(XmlSchemaXPathRuleModel.created_at.desc())
+            .order_by(XmlSchemaXPathRuleModel.created_at.asc())
         )
 
         result = await self._session.execute(statement)

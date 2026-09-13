@@ -2,11 +2,21 @@ from typing import BinaryIO
 
 from lxml import etree
 
+from document_platform.application.processing.models import (
+    ExtractedValue,
+    ProcessingConfiguration,
+    ProcessingResult,
+)
 from document_platform.application.processing.ports import DocumentProcessor
 
 
 class XmlDocumentProcessor(DocumentProcessor):
-    async def process(self, document: BinaryIO, schema: BinaryIO):
+    async def process(
+        self,
+        document: BinaryIO,
+        schema: BinaryIO,
+        configuration: ProcessingConfiguration,
+    ) -> ProcessingResult:
         document.seek(0)
 
         try:
@@ -26,3 +36,21 @@ class XmlDocumentProcessor(DocumentProcessor):
             raise ValueError(
                 "Document does not conform to the XML schema.",
             ) from exception
+
+        extracted_values = []
+        for rule in configuration.xpath_rules:
+            values = xml_document.xpath(rule.expression, namespaces=rule.namespaces)
+
+            extracted_values.append(
+                ExtractedValue(
+                    name=rule.name,
+                    values=[
+                        etree.tostring(value, encoding="unicode")
+                        if isinstance(value, etree._Element)
+                        else str(value)
+                        for value in values
+                    ],
+                ),
+            )
+
+        return ProcessingResult(extracted_values)

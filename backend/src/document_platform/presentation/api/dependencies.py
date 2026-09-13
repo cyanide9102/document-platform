@@ -12,6 +12,7 @@ from document_platform.application.documents.use_cases import (
 from document_platform.application.processing.ports import DocumentWorkflowStarter
 from document_platform.application.schemas.use_cases import (
     CreateXmlSchemaUseCase,
+    CreateXPathRulesUseCase,
     DeleteXmlSchemaUseCase,
     GetXmlSchemaUseCase,
     ListXmlSchemasUseCase,
@@ -81,6 +82,12 @@ async def get_list_xml_schemas_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
 ) -> ListXmlSchemasUseCase:
     return ListXmlSchemasUseCase(unit_of_work)
+
+
+async def get_create_xpath_rules_use_case(
+    unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+) -> CreateXPathRulesUseCase:
+    return CreateXPathRulesUseCase(unit_of_work)
 
 
 async def get_create_document_use_case(

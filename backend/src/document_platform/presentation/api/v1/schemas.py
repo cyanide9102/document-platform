@@ -2,19 +2,27 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
+from document_platform.application.schemas.dtos.create_xpath_rule import (
+    CreateXPathRuleRequest,
+)
 from document_platform.application.schemas.use_cases import (
     CreateXmlSchemaUseCase,
+    CreateXPathRulesUseCase,
     DeleteXmlSchemaUseCase,
     GetXmlSchemaUseCase,
     ListXmlSchemasUseCase,
 )
 from document_platform.presentation.api.dependencies import (
     get_create_xml_schema_use_case,
+    get_create_xpath_rules_use_case,
     get_delete_xml_schema_use_case,
     get_list_xml_schemas_use_case,
     get_xml_schema_use_case,
 )
-from document_platform.presentation.api.v1.dtos import SchemaResponse
+from document_platform.presentation.api.v1.dtos import (
+    SchemaResponse,
+    SchemaXPathRuleResponse,
+)
 
 router = APIRouter(
     prefix="/schemas",
@@ -40,6 +48,21 @@ async def create_schema(
         size=schema.size,
         created_at=schema.created_at,
     )
+
+
+@router.post(
+    "/{schema_id}/xpath-rules",
+    response_model=list[SchemaXPathRuleResponse],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_xpath_rules(
+    schema_id: UUID,
+    requests: list[CreateXPathRuleRequest],
+    use_case: CreateXPathRulesUseCase = Depends(get_create_xpath_rules_use_case),
+) -> list[SchemaXPathRuleResponse]:
+    xpath_rules = await use_case.execute(schema_id, requests)
+
+    return [SchemaXPathRuleResponse.model_validate(rule) for rule in xpath_rules]
 
 
 @router.delete(

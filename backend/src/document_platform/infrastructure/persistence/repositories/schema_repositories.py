@@ -3,8 +3,7 @@ from uuid import UUID
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from document_platform.domain.schemas import XmlSchema
-from document_platform.domain.schemas.repositories import XmlSchemaRepository
+from document_platform.domain.schemas import XmlSchema, XmlSchemaRepository
 from document_platform.infrastructure.persistence.mappers.schema_mapper import (
     to_domain,
     to_model,

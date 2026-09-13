@@ -5,8 +5,7 @@ import pytest
 from document_platform.application.schemas.use_cases import CreateXmlSchemaUseCase
 from document_platform.application.storage.ports import FileStorage
 from document_platform.application.unit_of_work import UnitOfWork
-from document_platform.domain.schemas import XmlSchema
-from document_platform.domain.schemas.repositories import XmlSchemaRepository
+from document_platform.domain.schemas import XmlSchema, XmlSchemaRepository
 
 VALID_XSD = b"""<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
 
-from document_platform.domain.documents.repositories import DocumentRepository
-from document_platform.domain.schemas.repositories import XmlSchemaRepository
+from document_platform.domain.documents import DocumentRepository
+from document_platform.domain.schemas import XmlSchemaRepository
 
 
 class UnitOfWork(ABC):

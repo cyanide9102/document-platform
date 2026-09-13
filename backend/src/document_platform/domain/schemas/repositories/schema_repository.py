@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from document_platform.domain.schemas.entities import XmlSchema
+from document_platform.domain.schemas.entities.schema import XmlSchema
 
 
 class XmlSchemaRepository(ABC):

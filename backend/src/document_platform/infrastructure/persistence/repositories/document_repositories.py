@@ -3,8 +3,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from document_platform.domain.documents.entities import Document
-from document_platform.domain.documents.repositories import DocumentRepository
+from document_platform.domain.documents import Document, DocumentRepository
 from document_platform.infrastructure.persistence.mappers.document_mapper import (
     to_domain,
     to_model,

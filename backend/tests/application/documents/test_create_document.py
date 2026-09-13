@@ -4,12 +4,17 @@ from uuid import UUID
 import pytest
 
 from document_platform.application.documents.use_cases import CreateDocumentUseCase
+from document_platform.application.processing.ports.document_workflow_starter import (
+    DocumentWorkflowStarter,
+)
 from document_platform.application.storage.ports import FileStorage
 from document_platform.application.unit_of_work import UnitOfWork
-from document_platform.domain.documents import Document, DocumentStatus
-from document_platform.domain.documents.repositories import DocumentRepository
-from document_platform.domain.schemas import XmlSchema
-from document_platform.domain.schemas.repositories import XmlSchemaRepository
+from document_platform.domain.documents import (
+    Document,
+    DocumentRepository,
+    DocumentStatus,
+)
+from document_platform.domain.schemas import XmlSchema, XmlSchemaRepository
 
 SCHEMA_ID = UUID("11111111-1111-1111-1111-111111111111")
 
@@ -21,6 +26,12 @@ class FakeDocumentRepository(DocumentRepository):
     async def add(self, document):
         self.documents.append(document)
 
+    async def update(self, document: Document) -> None:
+        for index, existing in enumerate(self.documents):
+            if existing.id == document.id:
+                self.documents[index] = document
+                return
+
     async def get_by_id(self, document_id) -> Document | None:
         for document in self.documents:
             if document.id == document_id:
@@ -30,6 +41,9 @@ class FakeDocumentRepository(DocumentRepository):
 
     async def list(self) -> list[Document]:
         return self.documents
+
+    async def count_by_schema_id(self, schema_id):
+        return sum(1 for document in self.documents if document.schema_id == schema_id)
 
 
 class FakeXmlSchemaRepository(XmlSchemaRepository):
@@ -101,6 +115,14 @@ class FakeDocumentStorage(FileStorage):
         self.saved_documents.pop(document_id, None)
 
 
+class FakeDocumentWorkflowStarter(DocumentWorkflowStarter):
+    def __init__(self):
+        self.started_document_ids = []
+
+    async def start(self, document_id):
+        self.started_document_ids.append(document_id)
+
+
 def create_schema() -> XmlSchema:
     schema = XmlSchema.create(
         name="Invoice",
@@ -117,14 +139,12 @@ def create_schema() -> XmlSchema:
 async def test_create_document():
     unit_of_work = FakeUnitOfWork()
     document_storage = FakeDocumentStorage()
+    workflow_starter = FakeDocumentWorkflowStarter()
 
     schema = create_schema()
     unit_of_work.schemas.schemas.append(schema)
 
-    use_case = CreateDocumentUseCase(
-        unit_of_work,
-        document_storage,
-    )
+    use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
     content = BytesIO(b"<invoice>test</invoice>")
 
@@ -158,11 +178,9 @@ async def test_create_document():
 async def test_create_document_rejects_nonexistent_schema():
     unit_of_work = FakeUnitOfWork()
     document_storage = FakeDocumentStorage()
+    workflow_starter = FakeDocumentWorkflowStarter()
 
-    use_case = CreateDocumentUseCase(
-        unit_of_work,
-        document_storage,
-    )
+    use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
     content = BytesIO(b"<invoice>test</invoice>")
 
@@ -186,14 +204,12 @@ async def test_create_document_rejects_nonexistent_schema():
 async def test_create_document_deletes_storage_when_commit_fails():
     unit_of_work = FailingUnitOfWork()
     document_storage = FakeDocumentStorage()
+    workflow_starter = FakeDocumentWorkflowStarter()
 
     schema = create_schema()
     unit_of_work.schemas.schemas.append(schema)
 
-    use_case = CreateDocumentUseCase(
-        unit_of_work,
-        document_storage,
-    )
+    use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
     content = BytesIO(b"<invoice>test</invoice>")
 

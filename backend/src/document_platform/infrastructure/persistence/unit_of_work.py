@@ -6,6 +6,7 @@ from document_platform.application.unit_of_work import UnitOfWork
 from document_platform.infrastructure.persistence.repositories import (
     SqlAlchemyDocumentRepository,
     SqlAlchemyXmlSchemaRepository,
+    SqlAlchemyXmlSchemaXPathRuleRepository,
 )
 
 
@@ -14,6 +15,7 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
         self._session = session
         self.documents = SqlAlchemyDocumentRepository(session)
         self.schemas = SqlAlchemyXmlSchemaRepository(session)
+        self.schema_xpath_rules = SqlAlchemyXmlSchemaXPathRuleRepository(session)
 
     async def __aenter__(self) -> "SqlAlchemyUnitOfWork":
         return self

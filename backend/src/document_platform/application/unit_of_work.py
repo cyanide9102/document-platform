@@ -2,12 +2,16 @@ from abc import ABC, abstractmethod
 from types import TracebackType
 
 from document_platform.domain.documents import DocumentRepository
-from document_platform.domain.schemas import XmlSchemaRepository
+from document_platform.domain.schemas import (
+    XmlSchemaRepository,
+    XmlSchemaXPathRuleRepository,
+)
 
 
 class UnitOfWork(ABC):
     documents: DocumentRepository
     schemas: XmlSchemaRepository
+    schema_xpath_rules: XmlSchemaXPathRuleRepository
 
     @abstractmethod
     async def __aexit__(

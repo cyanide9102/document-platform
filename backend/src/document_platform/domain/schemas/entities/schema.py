@@ -21,7 +21,7 @@ class XmlSchema:
     def create(
         cls,
         name: str,
-        size: str,
+        size: int,
         content_hash: str,
     ) -> "XmlSchema":
         normalized_name = name.strip()

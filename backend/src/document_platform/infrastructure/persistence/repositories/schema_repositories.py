@@ -4,10 +4,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from document_platform.domain.schemas import XmlSchema, XmlSchemaRepository
-from document_platform.infrastructure.persistence.mappers.schema_mapper import (
-    to_domain,
-    to_model,
-)
+from document_platform.infrastructure.persistence.mappers import XmlSchemaMapper
 from document_platform.infrastructure.persistence.models import XmlSchemaModel
 
 
@@ -16,7 +13,7 @@ class SqlAlchemyXmlSchemaRepository(XmlSchemaRepository):
         self._session = session
 
     async def add(self, schema: XmlSchema):
-        model = to_model(schema)
+        model = XmlSchemaMapper.to_model(schema)
 
         self._session.add(model)
 
@@ -26,7 +23,7 @@ class SqlAlchemyXmlSchemaRepository(XmlSchemaRepository):
         result = await self._session.execute(statement)
         models = result.scalars().all()
 
-        return [to_domain(model) for model in models]
+        return [XmlSchemaMapper.to_domain(model) for model in models]
 
     async def get_by_id(self, schema_id: UUID) -> XmlSchema | None:
         statement = select(XmlSchemaModel).where(XmlSchemaModel.id == schema_id)
@@ -36,7 +33,7 @@ class SqlAlchemyXmlSchemaRepository(XmlSchemaRepository):
         if model is None:
             return None
 
-        return to_domain(model)
+        return XmlSchemaMapper.to_domain(model)
 
     async def delete(self, schema_id):
         statement = delete(XmlSchemaModel).where(XmlSchemaModel.id == schema_id)

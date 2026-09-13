@@ -1,7 +1,9 @@
-from document_platform.infrastructure.persistence.models.document import DocumentModel
-from document_platform.infrastructure.persistence.models.schema import XmlSchemaModel
+from .document import DocumentModel
+from .schema import XmlSchemaModel
+from .schema_xpath_rule import XmlSchemaXPathRuleModel
 
 __all__ = [
     "DocumentModel",
     "XmlSchemaModel",
+    "XmlSchemaXPathRuleModel",
 ]

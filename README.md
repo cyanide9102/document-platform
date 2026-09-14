@@ -410,10 +410,10 @@ The project is being developed incrementally around the target production stack.
 
 ### Phase 3 — Advanced XML Processing
 
-- [ ] XPath
-- [ ] Schematron
-- [ ] Structured validation results
-- [ ] Processing error model
+- [x] XPath
+- [x] Schematron
+- [x] Structured validation results
+- [x] Processing error model
 
 ### Phase 4 — Digital Signatures
 

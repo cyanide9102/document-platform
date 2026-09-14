@@ -15,11 +15,13 @@ class ProcessDocumentUseCase:
         self,
         unit_of_work: UnitOfWork,
         schema_storage: FileStorage,
+        schematron_storage: FileStorage,
         document_storage: FileStorage,
         document_processor: DocumentProcessor,
     ):
         self._unit_of_work = unit_of_work
         self._schema_storage = schema_storage
+        self._schematron_storage = schematron_storage
         self._document_storage = document_storage
         self._document_processor = document_processor
 
@@ -34,13 +36,11 @@ class ProcessDocumentUseCase:
                 raise ValueError(f"Schema not found: {document.schema_id}")
 
             xpath_rules = await self._unit_of_work.schema_xpath_rules.list_by_schema_id(
-                schema.id
+                schema.id,
             )
 
-            configuration = ProcessingConfiguration(
-                xpath_rules=[
-                    XPathRuleMapper.to_application(rule) for rule in xpath_rules
-                ],
+            schematron = await self._unit_of_work.schema_schematrons.get_by_schema_id(
+                schema.id,
             )
 
             document.start_processing()
@@ -50,6 +50,19 @@ class ProcessDocumentUseCase:
             try:
                 document_content = await self._document_storage.get(document.id)
                 schema_content = await self._schema_storage.get(schema.id)
+
+                schematron_content = None
+                if schematron is not None:
+                    schematron_content = await self._schematron_storage.get(
+                        schematron.id,
+                    )
+
+                configuration = ProcessingConfiguration(
+                    xpath_rules=[
+                        XPathRuleMapper.to_application(rule) for rule in xpath_rules
+                    ],
+                    schematron=schematron_content,
+                )
 
                 result = await self._document_processor.process(
                     document_content,
@@ -62,8 +75,8 @@ class ProcessDocumentUseCase:
                 await self._unit_of_work.documents.update(document)
                 await self._unit_of_work.commit()
 
-                print(result)
                 return result
+
             except Exception:
                 document.mark_failed()
 

@@ -1,5 +1,4 @@
 import hashlib
-from typing import BinaryIO
 
 from lxml import etree
 
@@ -17,16 +16,13 @@ class CreateXmlSchemaUseCase:
         self._unit_of_work = unit_of_work
         self._schema_storage = schema_storage
 
-    async def execute(self, name: str, content: BinaryIO) -> XmlSchema:
-        size, content_hash = self._process_content(content)
+    async def execute(self, name: str, content: bytes) -> XmlSchema:
+        size = len(content)
+        content_hash = hashlib.sha256(content).hexdigest()
 
         self._validate_schema(content)
 
-        schema = XmlSchema.create(
-            name=name,
-            size=size,
-            content_hash=content_hash,
-        )
+        schema = XmlSchema.create(name=name, size=size, content_hash=content_hash)
 
         try:
             await self._schema_storage.save(schema.id, content)
@@ -40,29 +36,10 @@ class CreateXmlSchemaUseCase:
             await self._schema_storage.delete(schema.id)
             raise
 
-    def _process_content(self, content: BinaryIO) -> tuple[int, str]:
-        content.seek(0)
-
-        hasher = hashlib.sha256()
-
-        size = 0
-        while chunk := content.read(1024 * 1024):
-            hasher.update(chunk)
-            size += len(chunk)
-
-        content_hash = hasher.hexdigest()
-
-        content.seek(0)
-
-        return size, content_hash
-
-    def _validate_schema(self, content: BinaryIO):
-        content.seek(0)
-
+    @staticmethod
+    def _validate_schema(content: bytes):
         try:
-            schema_document = etree.parse(content)
+            schema_document = etree.fromstring(content)
             etree.XMLSchema(schema_document)
         except (etree.XMLSyntaxError, etree.XMLSchemaParseError) as exception:
             raise ValueError("Invalid XML schema.") from exception
-
-        content.seek(0)

@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import BinaryIO
 from uuid import UUID
 
 
 class FileStorage(ABC):
     @abstractmethod
-    async def save(self, file_id: UUID, content: BinaryIO):
+    async def save(self, file_id: UUID, content: bytes):
         pass
 
     @abstractmethod
-    async def get(self, file_id: UUID) -> BinaryIO:
+    async def get(self, file_id: UUID) -> bytes:
         pass
 
     @abstractmethod

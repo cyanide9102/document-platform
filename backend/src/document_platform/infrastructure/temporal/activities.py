@@ -23,8 +23,15 @@ class DocumentActivities:
 
             process_document_use_case = ProcessDocumentUseCase(
                 unit_of_work=unit_of_work,
-                schema_storage=LocalFileStorage(settings.storage_path / "schemas"),
-                document_storage=LocalFileStorage(settings.storage_path / "documents"),
+                schema_storage=LocalFileStorage(
+                    settings.storage_path / "schemas",
+                ),
+                schematron_storage=LocalFileStorage(
+                    settings.storage_path / "schematrons"
+                ),
+                document_storage=LocalFileStorage(
+                    settings.storage_path / "documents",
+                ),
                 document_processor=XmlDocumentProcessor(),
             )
 

@@ -1,5 +1,3 @@
-from io import BytesIO
-
 import pytest
 
 from document_platform.application.schemas.use_cases import CreateXmlSchemaUseCase
@@ -32,7 +30,7 @@ class FakeXmlSchemaRepository(XmlSchemaRepository):
     def __init__(self):
         self.schemas: list[XmlSchema] = []
 
-    async def add(self, schema: XmlSchema) -> None:
+    async def add(self, schema: XmlSchema):
         self.schemas.append(schema)
 
     async def get_by_id(self, schema_id) -> XmlSchema | None:
@@ -42,7 +40,7 @@ class FakeXmlSchemaRepository(XmlSchemaRepository):
 
         return None
 
-    async def delete(self, schema_id) -> None:
+    async def delete(self, schema_id):
         self.schemas = [schema for schema in self.schemas if schema.id != schema_id]
 
     async def list(self) -> list[XmlSchema]:
@@ -77,35 +75,36 @@ class FailingUnitOfWork(FakeUnitOfWork):
         raise RuntimeError("Database failure")
 
 
-class FakeSchemaStorage(FileStorage):
+class FakeStorage(FileStorage):
     def __init__(self):
-        self.saved_schemas: dict[str, bytes] = {}
-        self.deleted_schemas: list[str] = []
+        self.saved_files: dict[str, bytes] = {}
+        self.deleted_files: list[str] = []
 
     async def save(self, file_id, content):
-        self.saved_schemas[str(file_id)] = content.read()
+        self.saved_files[str(file_id)] = content
 
     async def get(self, file_id):
-        content = self.saved_schemas[str(file_id)]
-        return BytesIO(content)
+        content = self.saved_files[str(file_id)]
+        return content
 
     async def delete(self, file_id):
         file_id = str(file_id)
-        self.deleted_schemas.append(file_id)
-        self.saved_schemas.pop(file_id, None)
+
+        self.deleted_files.append(file_id)
+        self.saved_files.pop(file_id, None)
 
 
 @pytest.mark.asyncio
 async def test_create_schema():
     unit_of_work = FakeUnitOfWork()
-    schema_storage = FakeSchemaStorage()
+    schema_storage = FakeStorage()
 
     use_case = CreateXmlSchemaUseCase(
         unit_of_work,
         schema_storage,
     )
 
-    content = BytesIO(VALID_XSD)
+    content = VALID_XSD
 
     schema = await use_case.execute(
         name="Invoice",
@@ -123,21 +122,21 @@ async def test_create_schema():
 
     schema_id = str(schema.id)
 
-    assert schema_id in schema_storage.saved_schemas
-    assert schema_storage.saved_schemas[schema_id] == VALID_XSD
+    assert schema_id in schema_storage.saved_files
+    assert schema_storage.saved_files[schema_id] == VALID_XSD
 
 
 @pytest.mark.asyncio
 async def test_create_schema_rejects_invalid_xsd():
     unit_of_work = FakeUnitOfWork()
-    schema_storage = FakeSchemaStorage()
+    schema_storage = FakeStorage()
 
     use_case = CreateXmlSchemaUseCase(
         unit_of_work,
         schema_storage,
     )
 
-    content = BytesIO(INVALID_XSD)
+    content = INVALID_XSD
 
     with pytest.raises(
         ValueError,
@@ -149,21 +148,21 @@ async def test_create_schema_rejects_invalid_xsd():
         )
 
     assert len(unit_of_work.schemas.schemas) == 0
-    assert len(schema_storage.saved_schemas) == 0
+    assert len(schema_storage.saved_files) == 0
     assert unit_of_work.committed is False
 
 
 @pytest.mark.asyncio
 async def test_create_schema_deletes_storage_when_commit_fails():
     unit_of_work = FailingUnitOfWork()
-    schema_storage = FakeSchemaStorage()
+    schema_storage = FakeStorage()
 
     use_case = CreateXmlSchemaUseCase(
         unit_of_work,
         schema_storage,
     )
 
-    content = BytesIO(VALID_XSD)
+    content = VALID_XSD
 
     with pytest.raises(
         RuntimeError,
@@ -174,5 +173,5 @@ async def test_create_schema_deletes_storage_when_commit_fails():
             content=content,
         )
 
-    assert len(schema_storage.saved_schemas) == 0
-    assert len(schema_storage.deleted_schemas) == 1
+    assert len(schema_storage.saved_files) == 0
+    assert len(schema_storage.deleted_files) == 1

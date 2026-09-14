@@ -6,6 +6,7 @@ from document_platform.application.schemas.dtos.create_xpath_rule import (
     CreateXPathRuleRequest,
 )
 from document_platform.application.schemas.use_cases import (
+    CreateXmlSchemaSchematronUseCase,
     CreateXmlSchemaUseCase,
     CreateXPathRulesUseCase,
     DeleteXmlSchemaUseCase,
@@ -13,6 +14,7 @@ from document_platform.application.schemas.use_cases import (
     ListXmlSchemasUseCase,
 )
 from document_platform.presentation.api.dependencies import (
+    get_create_schematron_use_case,
     get_create_xml_schema_use_case,
     get_create_xpath_rules_use_case,
     get_delete_xml_schema_use_case,
@@ -21,6 +23,7 @@ from document_platform.presentation.api.dependencies import (
 )
 from document_platform.presentation.api.v1.dtos import (
     SchemaResponse,
+    SchemaSchematronResponse,
     SchemaXPathRuleResponse,
 )
 
@@ -40,7 +43,8 @@ async def create_schema(
     name: str = Form(...),
     use_case: CreateXmlSchemaUseCase = Depends(get_create_xml_schema_use_case),
 ) -> SchemaResponse:
-    schema = await use_case.execute(name=name, content=file.file)
+    content = await file.read()
+    schema = await use_case.execute(name, content)
 
     return SchemaResponse(
         id=schema.id,
@@ -48,6 +52,25 @@ async def create_schema(
         size=schema.size,
         created_at=schema.created_at,
     )
+
+
+@router.post(
+    "/{schema_id}/schematron",
+    response_model=SchemaSchematronResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_schematron(
+    schema_id: UUID,
+    file: UploadFile = File(...),
+    use_case: CreateXmlSchemaSchematronUseCase = Depends(
+        get_create_schematron_use_case,
+    ),
+) -> SchemaSchematronResponse:
+    content = await file.read()
+
+    schematron = await use_case.execute(schema_id, file.filename, content)
+
+    return SchemaSchematronResponse.model_validate(schematron)
 
 
 @router.post(

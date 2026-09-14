@@ -1,4 +1,3 @@
-from typing import BinaryIO
 from uuid import UUID
 
 from document_platform.application.storage.ports import FileStorage
@@ -11,7 +10,7 @@ class GetDocumentContentUseCase:
         self._unit_of_work = unit_of_work
         self._document_storage = document_storage
 
-    async def execute(self, document_id: UUID) -> tuple[Document, BinaryIO]:
+    async def execute(self, document_id: UUID) -> tuple[Document, bytes]:
         async with self._unit_of_work:
             document = await self._unit_of_work.documents.get_by_id(document_id)
             if document is None:

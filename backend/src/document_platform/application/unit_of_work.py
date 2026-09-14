@@ -4,6 +4,7 @@ from types import TracebackType
 from document_platform.domain.documents import DocumentRepository
 from document_platform.domain.schemas import (
     XmlSchemaRepository,
+    XmlSchemaSchematronRepository,
     XmlSchemaXPathRuleRepository,
 )
 
@@ -11,6 +12,7 @@ from document_platform.domain.schemas import (
 class UnitOfWork(ABC):
     documents: DocumentRepository
     schemas: XmlSchemaRepository
+    schema_schematrons: XmlSchemaSchematronRepository
     schema_xpath_rules: XmlSchemaXPathRuleRepository
 
     @abstractmethod

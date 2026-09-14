@@ -5,6 +5,7 @@ description = "Document Processing & Signing Platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiofiles>=25.1.0",
     "alembic>=1.19.2",
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.141.1",

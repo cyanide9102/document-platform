@@ -1,4 +1,3 @@
-from io import BytesIO
 from uuid import UUID
 
 import pytest
@@ -26,7 +25,7 @@ class FakeDocumentRepository(DocumentRepository):
     async def add(self, document):
         self.documents.append(document)
 
-    async def update(self, document: Document) -> None:
+    async def update(self, document: Document):
         for index, existing in enumerate(self.documents):
             if existing.id == document.id:
                 self.documents[index] = document
@@ -96,23 +95,23 @@ class FailingUnitOfWork(FakeUnitOfWork):
         raise RuntimeError("Database failure")
 
 
-class FakeDocumentStorage(FileStorage):
+class FakeStorage(FileStorage):
     def __init__(self):
-        self.saved_documents: dict[str, bytes] = {}
-        self.deleted_documents: list[str] = []
+        self.saved_files: dict[str, bytes] = {}
+        self.deleted_files: list[str] = []
 
-    async def save(self, document_id, content):
-        self.saved_documents[str(document_id)] = content.read()
+    async def save(self, file_id, content):
+        self.saved_files[str(file_id)] = content
 
-    async def get(self, document_id):
-        content = self.saved_documents[str(document_id)]
-        return BytesIO(content)
+    async def get(self, file_id):
+        content = self.saved_files[str(file_id)]
+        return content
 
-    async def delete(self, document_id):
-        document_id = str(document_id)
+    async def delete(self, file_id):
+        file_id = str(file_id)
 
-        self.deleted_documents.append(document_id)
-        self.saved_documents.pop(document_id, None)
+        self.deleted_files.append(file_id)
+        self.saved_files.pop(file_id, None)
 
 
 class FakeDocumentWorkflowStarter(DocumentWorkflowStarter):
@@ -138,7 +137,7 @@ def create_schema() -> XmlSchema:
 @pytest.mark.asyncio
 async def test_create_document():
     unit_of_work = FakeUnitOfWork()
-    document_storage = FakeDocumentStorage()
+    document_storage = FakeStorage()
     workflow_starter = FakeDocumentWorkflowStarter()
 
     schema = create_schema()
@@ -146,7 +145,7 @@ async def test_create_document():
 
     use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
-    content = BytesIO(b"<invoice>test</invoice>")
+    content = b"<invoice>test</invoice>"
 
     document = await use_case.execute(
         name="invoice.xml",
@@ -170,19 +169,19 @@ async def test_create_document():
 
     document_id = str(document.id)
 
-    assert document_id in document_storage.saved_documents
-    assert document_storage.saved_documents[document_id] == b"<invoice>test</invoice>"
+    assert document_id in document_storage.saved_files
+    assert document_storage.saved_files[document_id] == b"<invoice>test</invoice>"
 
 
 @pytest.mark.asyncio
 async def test_create_document_rejects_nonexistent_schema():
     unit_of_work = FakeUnitOfWork()
-    document_storage = FakeDocumentStorage()
+    document_storage = FakeStorage()
     workflow_starter = FakeDocumentWorkflowStarter()
 
     use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
-    content = BytesIO(b"<invoice>test</invoice>")
+    content = b"<invoice>test</invoice>"
 
     with pytest.raises(
         ValueError,
@@ -196,14 +195,14 @@ async def test_create_document_rejects_nonexistent_schema():
         )
 
     assert len(unit_of_work.documents.documents) == 0
-    assert len(document_storage.saved_documents) == 0
+    assert len(document_storage.saved_files) == 0
     assert unit_of_work.committed is False
 
 
 @pytest.mark.asyncio
 async def test_create_document_deletes_storage_when_commit_fails():
     unit_of_work = FailingUnitOfWork()
-    document_storage = FakeDocumentStorage()
+    document_storage = FakeStorage()
     workflow_starter = FakeDocumentWorkflowStarter()
 
     schema = create_schema()
@@ -211,7 +210,7 @@ async def test_create_document_deletes_storage_when_commit_fails():
 
     use_case = CreateDocumentUseCase(unit_of_work, document_storage, workflow_starter)
 
-    content = BytesIO(b"<invoice>test</invoice>")
+    content = b"<invoice>test</invoice>"
 
     with pytest.raises(RuntimeError, match="Database failure"):
         await use_case.execute(
@@ -221,5 +220,5 @@ async def test_create_document_deletes_storage_when_commit_fails():
             schema_id=SCHEMA_ID,
         )
 
-    assert len(document_storage.saved_documents) == 0
-    assert len(document_storage.deleted_documents) == 1
+    assert len(document_storage.saved_files) == 0
+    assert len(document_storage.deleted_files) == 1

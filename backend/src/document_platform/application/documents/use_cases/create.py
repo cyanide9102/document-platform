@@ -1,5 +1,4 @@
 import hashlib
-from typing import BinaryIO
 from uuid import UUID
 
 from document_platform.application.processing.ports import DocumentWorkflowStarter
@@ -22,7 +21,7 @@ class CreateDocumentUseCase:
     async def execute(
         self,
         name: str,
-        content: BinaryIO,
+        content: bytes,
         content_type: str | None,
         schema_id: UUID,
     ) -> Document:
@@ -31,7 +30,9 @@ class CreateDocumentUseCase:
             if schema is None:
                 raise ValueError(f"Schema not found: {schema_id}")
 
-            size, content_hash = self._process_content(content)
+            size = len(content)
+            content_hash = hashlib.sha256(content).hexdigest()
+
             document = Document.create(
                 name=name,
                 content_type=content_type,
@@ -50,20 +51,5 @@ class CreateDocumentUseCase:
                 raise
 
         await self._workflow_starter.start(document.id)
+
         return document
-
-    def _process_content(self, content: BinaryIO) -> tuple[int, str]:
-        content.seek(0)
-
-        hasher = hashlib.sha256()
-
-        size = 0
-        while chunk := content.read(1024 * 1024):
-            hasher.update(chunk)
-            size += len(chunk)
-
-        content_hash = hasher.hexdigest()
-
-        content.seek(0)
-
-        return size, content_hash

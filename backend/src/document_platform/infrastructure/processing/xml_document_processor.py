@@ -1,5 +1,3 @@
-from typing import BinaryIO
-
 from lxml import etree
 
 from document_platform.application.processing.models import (
@@ -18,21 +16,17 @@ from document_platform.domain.schemas.entities.schema_xpath_rule_type import (
 class XmlDocumentProcessor(DocumentProcessor):
     async def process(
         self,
-        document: BinaryIO,
-        schema: BinaryIO,
+        document: bytes,
+        schema: bytes,
         configuration: ProcessingConfiguration,
     ) -> ProcessingResult:
-        document.seek(0)
-
         try:
-            xml_document = etree.parse(document)
+            xml_document = etree.fromstring(document)
         except etree.XMLSyntaxError as exception:
             raise ValueError("Document contains invalid XML.") from exception
 
-        schema.seek(0)
-
         try:
-            schema_document = etree.parse(schema)
+            schema_document = etree.fromstring(schema)
             xml_schema = etree.XMLSchema(schema_document)
         except (etree.XMLSyntaxError, etree.XMLSchemaParseError) as exception:
             raise ValueError("Invalid XML schema.") from exception
@@ -49,6 +43,25 @@ class XmlDocumentProcessor(DocumentProcessor):
                 )
                 for error in xml_schema.error_log
             )
+
+        if configuration.schematron is not None:
+            try:
+                schematron_document = etree.fromstring(configuration.schematron)
+                schematron = etree.Schematron(schematron_document)
+            except (etree.XMLSyntaxError, etree.SchematronParseError) as exception:
+                raise ValueError("Invalid Schematron definition.") from exception
+
+            if not schematron.validate(xml_document):
+                validation_results.extend(
+                    ValidationResult(
+                        severity=ValidationSeverity.ERROR,
+                        code="SCHEMATRON_VALIDATION_ERROR",
+                        message=error.message,
+                        line=error.line,
+                        column=error.column,
+                    )
+                    for error in schematron.error_log
+                )
 
         extracted_values = []
         for rule in configuration.xpath_rules:

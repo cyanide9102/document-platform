@@ -13,6 +13,16 @@ class SchemaResponse(BaseModel):
     created_at: datetime
 
 
+class SchemaSchematronResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    schema_id: UUID
+    name: str
+    size: int
+    created_at: datetime
+
+
 class SchemaXPathRuleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

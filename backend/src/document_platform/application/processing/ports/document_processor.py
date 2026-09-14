@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import BinaryIO
 
 from document_platform.application.processing.models import (
     ProcessingConfiguration,
@@ -11,8 +10,8 @@ class DocumentProcessor(ABC):
     @abstractmethod
     async def process(
         self,
-        document: BinaryIO,
-        schema: BinaryIO,
+        document: bytes,
+        schema: bytes,
         configuration: ProcessingConfiguration,
     ) -> ProcessingResult:
         pass

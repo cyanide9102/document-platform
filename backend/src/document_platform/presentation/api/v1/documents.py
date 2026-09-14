@@ -33,9 +33,11 @@ async def create_document(
     schema_id: UUID = Form(...),
     use_case: CreateDocumentUseCase = Depends(get_create_document_use_case),
 ) -> DocumentResponse:
+    content = await file.read()
+
     document = await use_case.execute(
         name=file.filename,
-        content=file.file,
+        content=content,
         content_type=file.content_type,
         schema_id=schema_id,
     )

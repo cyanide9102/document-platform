@@ -11,6 +11,7 @@ from document_platform.application.documents.use_cases import (
 )
 from document_platform.application.processing.ports import DocumentWorkflowStarter
 from document_platform.application.schemas.use_cases import (
+    CreateXmlSchemaSchematronUseCase,
     CreateXmlSchemaUseCase,
     CreateXPathRulesUseCase,
     DeleteXmlSchemaUseCase,
@@ -34,6 +35,10 @@ from document_platform.infrastructure.temporal.starter import (
 
 def get_schema_storage() -> FileStorage:
     return LocalFileStorage(settings.storage_path / "schemas")
+
+
+def get_schematron_storage() -> FileStorage:
+    return LocalFileStorage(settings.storage_path / "schematrons")
 
 
 def get_document_storage() -> FileStorage:
@@ -88,6 +93,13 @@ async def get_create_xpath_rules_use_case(
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
 ) -> CreateXPathRulesUseCase:
     return CreateXPathRulesUseCase(unit_of_work)
+
+
+async def get_create_schematron_use_case(
+    unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    schematron_storage: FileStorage = Depends(get_schematron_storage),
+) -> CreateXmlSchemaSchematronUseCase:
+    return CreateXmlSchemaSchematronUseCase(unit_of_work, schematron_storage)
 
 
 async def get_create_document_use_case(

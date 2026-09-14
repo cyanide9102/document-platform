@@ -15,6 +15,7 @@ class XmlSchemaXPathRuleMapper:
             name=rule.name,
             expression=rule.expression,
             namespaces=rule.namespaces,
+            rule_type=rule.rule_type,
             created_at=rule.created_at,
         )
 
@@ -26,5 +27,6 @@ class XmlSchemaXPathRuleMapper:
             name=model.name,
             expression=model.expression,
             namespaces=model.namespaces,
+            rule_type=model.rule_type,
             created_at=model.created_at,
         )

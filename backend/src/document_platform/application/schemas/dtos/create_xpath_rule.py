@@ -6,3 +6,4 @@ class CreateXPathRuleRequest:
     name: str
     expression: str
     namespaces: dict[str, str]
+    rule_type: str

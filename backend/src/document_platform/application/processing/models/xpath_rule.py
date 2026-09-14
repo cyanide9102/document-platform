@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from document_platform.domain.schemas import XmlSchemaXPathRuleType
+
 
 class XPathRule(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -7,3 +9,4 @@ class XPathRule(BaseModel):
     name: str = Field(min_length=1)
     expression: str = Field(min_length=1)
     namespaces: dict[str, str] = Field(default_factory=dict)
+    rule_type: XmlSchemaXPathRuleType = XmlSchemaXPathRuleType.EXTRACT

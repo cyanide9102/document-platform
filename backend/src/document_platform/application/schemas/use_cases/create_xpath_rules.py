@@ -28,6 +28,7 @@ class CreateXPathRulesUseCase:
                     name=request.name,
                     expression=request.expression,
                     namespaces=request.namespaces,
+                    rule_type=request.rule_type,
                 )
 
                 await self._unit_of_work.schema_xpath_rules.add(rule)

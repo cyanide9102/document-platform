@@ -1,6 +1,10 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
+from document_platform.domain.schemas.entities.schema_xpath_rule_type import (
+    XmlSchemaXPathRuleType,
+)
+
 
 class XmlSchemaXPathRule:
     def __init__(
@@ -10,6 +14,7 @@ class XmlSchemaXPathRule:
         name: str,
         expression: str,
         namespaces: dict[str, str],
+        rule_type: XmlSchemaXPathRuleType,
         created_at: datetime,
     ):
         self.id = id
@@ -17,6 +22,7 @@ class XmlSchemaXPathRule:
         self.name = name
         self.expression = expression
         self.namespaces = namespaces
+        self.rule_type = rule_type
         self.created_at = created_at
 
     @classmethod
@@ -26,6 +32,7 @@ class XmlSchemaXPathRule:
         name: str,
         expression: str,
         namespaces: dict[str, str] | None = None,
+        rule_type: XmlSchemaXPathRuleType = XmlSchemaXPathRuleType.EXTRACT,
     ) -> "XmlSchemaXPathRule":
         normalized_name = name.strip()
         if not normalized_name:
@@ -51,5 +58,6 @@ class XmlSchemaXPathRule:
             name=normalized_name,
             expression=normalized_expression,
             namespaces=normalized_namespaces,
+            rule_type=rule_type,
             created_at=datetime.now(UTC),
         )

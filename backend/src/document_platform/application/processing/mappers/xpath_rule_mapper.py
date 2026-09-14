@@ -9,4 +9,5 @@ class XPathRuleMapper:
             name=rule.name,
             expression=rule.expression,
             namespaces=rule.namespaces,
+            rule_type=rule.rule_type,
         )
